@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Retention Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 400px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .recommendations-list {
+            white-space: pre-line;
+            line-height: 1.8;
+            padding: 15px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn-predict {
+            background-color: #1a73e8;
+            color: white;
+            padding: 8px 24px;
+            border-radius: 4px;
+            border: none;
+            min-width: 200px;
+        }
+
+        .container {
+      max-width: 700px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 2rem;
+      color: #333;
+    }
+    h3 {
+      font-size: 1.25rem;
+      color: #555;
+    }
+    .step {
+      margin: 20px 0;
+    }
+    input[type="file"], textarea {
+      padding: 10px;
+      font-size: 1rem;
+      margin-top: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    textarea {
+      height: 100px;
+    }
+    button {
+      background: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    #resumestatus {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #555;
+      font-weight: bold;
+    }
+    #resumeresults {
+      margin-top: 20px;
+    }
+    #resumeresults h3 {
+      color: #007BFF;
+      font-size: 1.25rem;
+      margin-bottom: 10px;
+    }
+    #resumeresults p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 15px;
+      white-space: pre-wrap;
+    }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <!-- Header Section with Logout Button -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Employee Retention Predictor</h2>
+            <form action="/logout" method="post" style="margin: 0;">
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+        </div>
+        <!-- acquisistion part code -->
+        <div class="container">
+            <h1>Resume Analyzer</h1>
+            <div class="step">
+              <h3>Step 1: Upload Resume</h3>
+              <input type="file" id="resumeInput" />
+            </div>
+            <div class="step">
+              <h3>Step 2: Edit Job Description</h3>
+              <textarea id="jobDescription" placeholder="Write the job description here..."></textarea>
+            </div>
+            <div class="step">
+              <button id="uploadButton">Upload Resume</button>
+            </div>
+            <div class="step">
+              <h3>Step 3: View Results</h3>
+              <button id="viewResultsButton" disabled>View Results</button>
+            </div>
+            <div id="resumestatus"></div>
+            <div id="resumeresults"></div>
+          </div>
+        <!-- New Survey Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h2 class="mb-0">Send Satisfaction Survey</h2>
+            </div>
+            <div class="card-body">
+                <form id="sendSurveyForm">
+                    <div class="form-group">
+                        <label>Employee Email:</label>
+                        <input type="email" id="employeeEmail" class="form-control" placeholder="Enter employee's email" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Send Survey</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">Employee Retention Predictor</h2>
+            </div>
+            <div class="card-body">
+                <form id="predictionForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Satisfaction Level (0-1):</label>
+                                <input type="number" class="form-control" name="satisfaction_level" 
+                                       step="0.01" min="0" max="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Evaluation (0-1):</label>
+                                <input type="number" class="form-control" name="last_evaluation" 
+                                       step="0.01" min="0" max="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Number of Projects:</label>
+                                <input type="number" class="form-control" name="number_project" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Average Monthly Hours:</label>
+                                <input type="number" class="form-control" name="average_monthly_hours" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Time Spent in Company (years):</label>
+                                <input type="number" class="form-control" name="time_spend_company" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Work Accident:</label>
+                                <select class="form-select" name="Work_accident" required>
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Promotion in Last 5 Years:</label>
+                                <select class="form-select" name="promotion_last_5years" required>
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Department:</label>
+                                <select class="form-select" name="department" required>
+                                    <option value="technical">Technical</option>
+                                    <option value="sales">Sales</option>
+                                    <option value="IT">IT</option>
+                                    <option value="hr">HR</option>
+                                    <option value="management">Management</option>
+                                    <option value="marketing">Marketing</option>
+                                    <option value="product_mng">Product Management</option>
+                                    <option value="RandD">R&D</option>
+                                    <option value="accounting">Accounting</option>
+                                    <option value="support">Support</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Salary Level:</label>
+                                <select class="form-select" name="salary" required>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="button-container">
+                        <button type="submit" class="btn-predict">Predict Retention</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="results" style="display: none;">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">Prediction Results</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h4 id="predictionResult" class="mb-2"></h4>
+                        <p id="probabilityResult" class="mb-0"></p>
+                    </div>
+                    <h4 class="mt-4">Recommendations</h4>
+                    <div class="alert alert-secondary">
+                        <div id="recommendations" class="recommendations-list"></div>
+                    </div>
+                    <h4 class="mt-4">Employee Metrics Comparison</h4>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <div class="chart-container">
+                                <canvas id="satisfactionChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="chart-container">
+                                <canvas id="evaluationChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="chart-container">
+                                <canvas id="hoursChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                document.getElementById('predictionResult').textContent = 
+                    `Prediction: ${result.prediction === 1 ? 'Likely to leave' : 'Likely to stay'}`;
+                document.getElementById('probabilityResult').textContent = 
+                    `Probability of leaving: ${(result.probability * 100).toFixed(2)}%`;
+                
+                const recommendations = result.recommendations.split(/\d+\./).filter(Boolean);
+                const formattedRecommendations = recommendations
+                    .map((rec, index) => `${index + 1}. ${rec.trim()}`)
+                    .join('\n\n');
+                document.getElementById('recommendations').textContent = formattedRecommendations;
+                
+                createCharts(data);
+                document.getElementById('results').style.display = 'block';
+                document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+                
+            } catch (error) {
+                alert('Error making prediction: ' + error.message);
+            }
+        });
+        function createCharts(employeeData) {
+            const charts = [
+                {
+                    id: 'satisfactionChart',
+                    title: 'Satisfaction Level',
+                    value: employeeData.satisfaction_level,
+                    average: 0.61,
+                    color: '#1a73e8'
+                },
+                {
+                    id: 'evaluationChart',
+                    title: 'Last Evaluation',
+                    value: employeeData.last_evaluation,
+                    average: 0.72,
+                    color: '#1e8e3e'
+                },
+                {
+                    id: 'hoursChart',
+                    title: 'Average Monthly Hours',
+                    value: employeeData.average_monthly_hours,
+                    average: 200,
+                    color: '#9334e6',
+                    maxScale: 250
+                }
+            ];
+            charts.forEach(chartData => {
+                new Chart(
+                    document.getElementById(chartData.id).getContext('2d'),
+                    {
+                        type: 'bar',
+                        data: {
+                            labels: ['Employee', 'Average'],
+                            datasets: [{
+                                data: [chartData.value, chartData.average],
+                                backgroundColor: [chartData.color, '#6c757d'],
+                                barPercentage: 0.5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                title: {
+                                    display: true,
+                                    text: chartData.title,
+                                    font: { size: 14, weight: 'bold' }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: chartData.maxScale || 1.0,
+                                    grid: { color: '#f0f0f0' }
+                                }
+                            }
+                        }
+                    }
+                );
+            });
+        }
+</script>
+<script>
+    // Send Survey Script
+    document.getElementById('sendSurveyForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('employeeEmail').value.trim();
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        // Validate email
+        if (!emailPattern.test(email)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+
+        const sendButton = document.querySelector('#sendSurveyForm button[type="submit"]');
+        sendButton.disabled = true;
+
+        try {
+            const response = await fetch('/send-survey', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            if (result.error) {
+                alert('Error sending survey: ' + result.error);
+            } else {
+                alert('Survey sent successfully!');
+            }
+        } catch (error) {
+            alert('Error sending survey: ' + error.message);
+        } finally {
+            sendButton.disabled = false; // Re-enable button after request
+        }
+    });
+</script>
+<script>
+    // Constants for API endpoints
+const RESUME_HANDLER_API_URL = "https://wf0dpn6qoe.execute-api.us-east-1.amazonaws.com/dev/upload";
+const S3_RESULTS_BASE_URL = "https://resume-analysis-results-bucket.s3.us-east-1.amazonaws.com/responses/";
+
+const resumeInput = document.getElementById("resumeInput");
+const uploadButton = document.getElementById("uploadButton");
+const viewResultsButton = document.getElementById("viewResultsButton");
+const jobDescriptionTextarea = document.getElementById("jobDescription");
+const statusDiv = document.getElementById("resumestatus");
+const resultsDiv = document.getElementById("resumeresults");
+
+let uploadedFileName = "";
+
+// Handle file upload
+uploadButton.addEventListener("click", async () => {
+  const file = resumeInput.files[0];
+  const jobDescription = jobDescriptionTextarea.value.trim(); // Get and trim job description
+
+  // Ensure a file is selected
+  if (!file) {
+    statusDiv.textContent = "Please select a file first!";
+    return;
+  }
+
+  // Ensure job description is provided
+  if (!jobDescription) {
+    statusDiv.textContent = "Please provide a job description before uploading.";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const base64Content = reader.result.split(",")[1]; // Extract base64 content
+    const payload = {
+      content: base64Content,
+      file_name: file.name,
+      job_description: jobDescription, // Include job description in the payload
+    };
+
+    try {
+      statusDiv.textContent = "Uploading file...";
+      const response = await fetch(RESUME_HANDLER_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        uploadedFileName = file.name; // Store file name for fetching results
+        statusDiv.textContent = "File uploaded successfully!";
+        viewResultsButton.disabled = false; // Enable view results button
+      } else {
+        const error = await response.json();
+        statusDiv.textContent = `Upload failed: ${error.message}`;
+      }
+    } catch (error) {
+      statusDiv.textContent = `Upload failed: ${error.message}`;
+    }
+  };
+
+  reader.readAsDataURL(file); // Convert file to base64
+});
+
+// Handle view results
+viewResultsButton.addEventListener("click", async () => {
+  if (!uploadedFileName) {
+    statusDiv.textContent = "No file uploaded yet. Please upload a resume first.";
+    return;
+  }
+
+  const jobDescription = jobDescriptionTextarea.value; // Get the updated job description
+
+  const resultsUrl = `${S3_RESULTS_BASE_URL}${uploadedFileName.replace(".pdf", ".json")}`;
+
+  try {
+    statusDiv.textContent = "Fetching results...";
+    const response = await fetch(resultsUrl);
+
+    if (response.ok) {
+      const data = await response.json();
+
+      // Clear previous results
+      resultsDiv.innerHTML = "";
+
+      // Display the Job Description
+      const jobDescDiv = document.createElement("div");
+      const jobDescHeading = document.createElement("h3");
+      jobDescHeading.textContent = "Job Description";
+      const jobDescContent = document.createElement("p");
+      jobDescContent.textContent = jobDescription;
+      jobDescDiv.appendChild(jobDescHeading);
+      jobDescDiv.appendChild(jobDescContent);
+      resultsDiv.appendChild(jobDescDiv);
+
+      // Display the Analysis Results
+      for (const [key, value] of Object.entries(data)) {
+        const section = document.createElement("div");
+        section.style.marginBottom = "20px";
+
+        // Create a section heading
+        const heading = document.createElement("h3");
+        heading.textContent = key.replace(/_/g, " ").toUpperCase(); // Convert key to a readable format
+        section.appendChild(heading);
+
+        // Create a paragraph for the value
+        const paragraph = document.createElement("p");
+        paragraph.textContent = value;
+        paragraph.style.whiteSpace = "pre-wrap"; // Preserve line breaks
+        section.appendChild(paragraph);
+
+        resultsDiv.appendChild(section);
+      }
+
+      statusDiv.textContent = "Results fetched successfully!";
+    } else {
+      statusDiv.textContent = "Failed to fetch results. Please try again.";
+    }
+  } catch (error) {
+    statusDiv.textContent = `Error fetching results: ${error.message}`;
+  }
+});
+
+</script>
+</body>
+</html>
+
