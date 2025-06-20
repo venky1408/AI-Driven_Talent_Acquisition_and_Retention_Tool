@@ -1,4 +1,3 @@
-
 # CMPE272-Group-5
 ## Title: AI-Driven Talent Acquisition and Retention Tool
 ### Website URL: [https://retention-model1-db00095f4cea.herokuapp.com/](https://retention-model1-db00095f4cea.herokuapp.com/)
@@ -8,3 +7,5 @@ To design and develop an AI-enabled solution to analyze HR data to predict candi
 This AI-powered web application revolutionizes talent management by analyzing candidate and employee data to predict hiring success and retention risks. It offers intuitive dashboards for candidate comparisons, employee assessments, continuous learning from new data, and changing industry trends. It would provide broad analytics with rich insights to drive more effective decision-making for better workforce management and strategic planning of talent.
 ## Use case persona
 Jake Johnson, a seasoned HR and Manager, seeking to modernize his team's approach to talent acquisition and retention in the rapidly evolving software development sector.
+
+Thank you for your contribution @ Pegasus0501
